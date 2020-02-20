@@ -135,6 +135,7 @@ function saveOutput() {
 	const resultLines = [`${orderedLibs.length}`];
 	orderedLibs.forEach(orderedLib => {
 		const books = orderedLib.orderedBooks.filter(bookId => bookId !== null);
+		if (!books.length) return;
 		resultLines.push(`${orderedLib.id} ${books.length}`);
 		resultLines.push(books.join(' '));
 	});
