@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "yarn startA && yarn startB && yarn startC && yarn startD && yarn startE && yarn startF",
     "startA": "INPUT=a_example node index.js",
     "startB": "INPUT=b_read_on node index.js",
     "startC": "INPUT=c_incunabula node index.js",

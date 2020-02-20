@@ -1,23 +1,87 @@
 const fs = require('fs');
 const path = require('path');
 
+const logging = false;
 const books = [];
 const libraries = [];
 
 readInput(`${process.env.INPUT}.txt`);
-//console.log(libraries);
+addSignupSpeedRank();
+addScanSpeedRank();
+addBooksAmountRank();
+addWeightRank();
+calculateTotalRank();
+if (logging) console.log(libraries);
 
-saveOutput([{ id: 1, booksOrder: [1, 2, 3] }]);
+const orderedLibs = libraries.map(lib => ({ id: lib.id, rank: lib.totalRank })).sort((a, b) => (a.rank === b.rank ? 0 : a.rank < b.rank ? 1 : -1));
+addOrderedBooks();
+if (logging) console.log(orderedLibs);
+
+saveOutput();
+
+function addSignupSpeedRank() {
+	const min = Math.min(...libraries.map(lib => lib.signupSpeed));
+	const max = Math.max(...libraries.map(lib => lib.signupSpeed));
+	const getRank = x => (max - x) / (max - min);
+	libraries.forEach(lib => {
+		lib.signupSpeedRank = getRank(lib.signupSpeed);
+	});
+}
+
+function addScanSpeedRank() {
+	const min = Math.min(...libraries.map(lib => lib.scanSpeed));
+	const max = Math.max(...libraries.map(lib => lib.scanSpeed));
+	const getRank = x => (x - min) / (max - min);
+	libraries.forEach(lib => {
+		lib.scanSpeedRank = getRank(lib.scanSpeed);
+	});
+}
+
+function addBooksAmountRank() {
+	const min = Math.min(...libraries.map(lib => lib.booksAmount));
+	const max = Math.max(...libraries.map(lib => lib.booksAmount));
+	const getRank = x => (x - min) / (max - min);
+	libraries.forEach(lib => {
+		lib.booksAmountRank = getRank(lib.booksAmount);
+	});
+}
+
+function addWeightRank() {
+	const getTotalBooksWeight = lib => Object.values(lib.books).reduce((acc, bookWeight) => acc + bookWeight, 0);
+	const getLibWeight = lib => getTotalBooksWeight(lib) / lib.booksAmount;
+	const libWeights = libraries.map(getLibWeight);
+	const min = Math.min(...libWeights);
+	const max = Math.max(...libWeights);
+	const getRank = x => (x - min) / (max - min);
+	libraries.forEach((lib, idx) => {
+		lib.weightRank = getRank(libWeights[idx]);
+	});
+}
+
+function calculateTotalRank() {
+	libraries.forEach(lib => {
+		lib.totalRank = 0.25 * lib.signupSpeedRank + 0.25 * lib.scanSpeedRank + 0.25 * lib.booksAmountRank + 0.25 * lib.weightRank;
+	});
+}
+
+function addOrderedBooks() {
+	orderedLibs.forEach(orderedLib => {
+		const lib = libraries[orderedLib.id];
+		const orderedBooks = Object.keys(lib.books)
+			.map(id => ({ id, rank: lib.books[id] }))
+			.sort((a, b) => (a.rank === b.rank ? 0 : a.rank < b.rank ? 1 : -1));
+		orderedLib.orderedBooks = orderedBooks.map(orderedBook => orderedBook.id);
+	});
+}
 
 function readInput(inputFile) {
 	const inputStr = fs.readFileSync(path.join(__dirname, `./task/${inputFile}`), { encoding: 'utf8' });
-	//console.log(inputStr);
 	const lines = inputStr.split('\n');
 
 	const firstLine = lines[0].split(' ');
-	const booksAmount = toNum(firstLine[0]);
+	//const booksAmount = toNum(firstLine[0]);
 	const librariesAmount = toNum(firstLine[1]);
-	const daysAmount = toNum(firstLine[2]);
+	//const daysAmount = toNum(firstLine[2]);
 
 	lines[1].split(' ').forEach(bookWeight => books.push(toNum(bookWeight)));
 
@@ -27,8 +91,8 @@ function readInput(inputFile) {
 		libraries.push({
 			id: libraries.length,
 			booksAmount: toNum(lineA[0]),
-			signupDays: toNum(lineA[1]),
-			booksSpeed: toNum(lineA[2]),
+			signupSpeed: toNum(lineA[1]),
+			scanSpeed: toNum(lineA[2]),
 			books: lineB.map(toNum).reduce((acc, bookId) => {
 				acc[bookId] = books[bookId];
 				return acc;
@@ -37,11 +101,11 @@ function readInput(inputFile) {
 	}
 }
 
-function saveOutput(libsOrder) {
-	const resultLines = [`${libsOrder.length}`];
-	libsOrder.forEach(libOrder => {
-		resultLines.push(`${libOrder.id} ${libOrder.booksOrder.length}`);
-		resultLines.push(libOrder.booksOrder.join(' '));
+function saveOutput() {
+	const resultLines = [`${orderedLibs.length}`];
+	orderedLibs.forEach(orderedLib => {
+		resultLines.push(`${orderedLib.id} ${orderedLib.orderedBooks.length}`);
+		resultLines.push(orderedLib.orderedBooks.join(' '));
 	});
 	const result = resultLines.join('\n');
 	const outputFile = `${process.env.INPUT}-output.txt`;
