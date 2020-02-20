@@ -1,4 +1,5 @@
 {
     "editor.formatOnSave": true,
-    "editor.comments.insertSpace": false
+    "editor.comments.insertSpace": false,
+    "editor.insertSpaces": false
 }
