@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 
 const logging = false;
+let daysAmount;
 const books = [];
 const libraries = [];
 
@@ -12,11 +13,10 @@ addBooksAmountRank();
 addWeightRank();
 calculateTotalRank(0.4, 0.2, 0.3, 0.1);
 if (logging) console.log(libraries);
-
 const orderedLibs = libraries.map(lib => ({ id: lib.id, rank: lib.totalRank })).sort((a, b) => (a.rank === b.rank ? 0 : a.rank < b.rank ? 1 : -1));
 addOrderedBooks();
+markDuplicatedBooks();
 if (logging) console.log(orderedLibs);
-
 saveOutput();
 
 function addSignupSpeedRank() {
@@ -74,14 +74,44 @@ function addOrderedBooks() {
 	});
 }
 
+function markDuplicatedBooks() {
+	const isLibActiveOnDay = (dayId, orderedLib) => dayId >= orderedLib.startFrom;
+	orderedLibs.reduce((acc, orderedLib) => {
+		const lib = libraries[orderedLib.id];
+		orderedLib.startFrom = acc + lib.signupSpeed;
+		return acc + lib.signupSpeed;
+	}, 0);
+
+	const scannedBooks = {};
+	for (let i = 0; i < daysAmount; i++) {
+		orderedLibs.forEach(orderedLib => {
+			if (!isLibActiveOnDay(i, orderedLib)) return;
+			const lib = libraries[orderedLib.id];
+			const startFromBook = (i - orderedLib.startFrom) * lib.scanSpeed;
+			const booksToScan = orderedLib.orderedBooks.slice(startFromBook, startFromBook + lib.scanSpeed).reduce((acc, bookId) => {
+				acc[bookId] = true;
+				return acc;
+			}, {});
+			if (logging) console.log(i, lib.id, booksToScan);
+			orderedLib.orderedBooks = orderedLib.orderedBooks.map(bookId => {
+				const needScan = !!booksToScan[bookId];
+				if (!needScan) return bookId;
+				if (scannedBooks[bookId]) return null;
+				scannedBooks[bookId] = true;
+				return bookId;
+			});
+		});
+	}
+}
+
 function readInput(inputFile) {
 	const inputStr = fs.readFileSync(path.join(__dirname, `./task/${inputFile}`), { encoding: 'utf8' });
 	const lines = inputStr.split('\n');
 
 	const firstLine = lines[0].split(' ');
-	//const booksAmount = toNum(firstLine[0]);
+	// const booksAmount = toNum(firstLine[0]);
 	const librariesAmount = toNum(firstLine[1]);
-	//const daysAmount = toNum(firstLine[2]);
+	daysAmount = toNum(firstLine[2]);
 
 	lines[1].split(' ').forEach(bookWeight => books.push(toNum(bookWeight)));
 
@@ -104,8 +134,9 @@ function readInput(inputFile) {
 function saveOutput() {
 	const resultLines = [`${orderedLibs.length}`];
 	orderedLibs.forEach(orderedLib => {
-		resultLines.push(`${orderedLib.id} ${orderedLib.orderedBooks.length}`);
-		resultLines.push(orderedLib.orderedBooks.join(' '));
+		const books = orderedLib.orderedBooks.filter(bookId => bookId !== null);
+		resultLines.push(`${orderedLib.id} ${books.length}`);
+		resultLines.push(books.join(' '));
 	});
 	const result = resultLines.join('\n');
 	const outputFile = `${process.env.INPUT}-output.txt`;
