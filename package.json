@@ -4,7 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "startA": "INPUT=a_example node index.js",
+    "startB": "INPUT=b_read_on node index.js",
+    "startC": "INPUT=c_incunabula node index.js",
+    "startD": "INPUT=d_tough_choices node index.js",
+    "startE": "INPUT=e_so_many_books node index.js",
+    "startF": "INPUT=f_libraries_of_the_world node index.js"
   },
   "author": "",
   "license": "ISC",

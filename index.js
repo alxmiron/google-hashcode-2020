@@ -4,8 +4,8 @@ const path = require('path');
 const books = [];
 const libraries = [];
 
-readInput('a_example.txt');
-console.log(libraries);
+readInput(`${process.env.INPUT}.txt`);
+//console.log(libraries);
 
 saveOutput([{ id: 1, booksOrder: [1, 2, 3] }]);
 
@@ -44,7 +44,7 @@ function saveOutput(libsOrder) {
 		resultLines.push(libOrder.booksOrder.join(' '));
 	});
 	const result = resultLines.join('\n');
-	const outputFile = 'output.txt';
+	const outputFile = `${process.env.INPUT}-output.txt`;
 	fs.writeFileSync(path.join(__dirname, `./task/${outputFile}`), result, { encoding: 'utf8' });
 }
 
