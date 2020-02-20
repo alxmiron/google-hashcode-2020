@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "yarn startA && yarn startB && yarn startC && yarn startD && yarn startE && yarn startF",
+    "start": "run-p startA startB startC startD startE startF",
     "startA": "INPUT=a_example node index.js",
     "startB": "INPUT=b_read_on node index.js",
     "startC": "INPUT=c_incunabula node index.js",
@@ -15,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "npm-run-all": "^4.1.5",
     "prettier": "^1.19.1"
   }
 }

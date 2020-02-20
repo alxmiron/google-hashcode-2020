@@ -10,7 +10,7 @@ addSignupSpeedRank();
 addScanSpeedRank();
 addBooksAmountRank();
 addWeightRank();
-calculateTotalRank();
+calculateTotalRank(0.4, 0.2, 0.3, 0.1);
 if (logging) console.log(libraries);
 
 const orderedLibs = libraries.map(lib => ({ id: lib.id, rank: lib.totalRank })).sort((a, b) => (a.rank === b.rank ? 0 : a.rank < b.rank ? 1 : -1));
@@ -58,9 +58,9 @@ function addWeightRank() {
 	});
 }
 
-function calculateTotalRank() {
+function calculateTotalRank(k1, k2, k3, k4) {
 	libraries.forEach(lib => {
-		lib.totalRank = 0.25 * lib.signupSpeedRank + 0.25 * lib.scanSpeedRank + 0.25 * lib.booksAmountRank + 0.25 * lib.weightRank;
+		lib.totalRank = k1 * lib.signupSpeedRank + k2 * lib.scanSpeedRank + k3 * lib.booksAmountRank + k4 * lib.weightRank;
 	});
 }
 
