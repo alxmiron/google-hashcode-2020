@@ -132,18 +132,14 @@ function readInput(inputFile) {
 }
 
 function saveOutput() {
-	let libsAmount = orderedLibs.length;
-	const resultLines = [];
+	const resultLines = [`${orderedLibs.length}`];
 	orderedLibs.forEach(orderedLib => {
-		const validBooks = orderedLib.orderedBooks.filter(bookId => bookId !== null);
-		if (!validBooks.length) {
-			libsAmount--;
-			return;
-		}
-		resultLines.push(`${orderedLib.id} ${validBooks.length}`);
-		resultLines.push(validBooks.join(' '));
+		const books = orderedLib.orderedBooks.filter(bookId => bookId !== null);
+		if (!books.length) return;
+		resultLines.push(`${orderedLib.id} ${books.length}`);
+		resultLines.push(books.join(' '));
 	});
-	const result = [`${libsAmount}`].concat(resultLines).join('\n');
+	const result = resultLines.join('\n');
 	const outputFile = `${process.env.INPUT}-output.txt`;
 	fs.writeFileSync(path.join(__dirname, `./task/${outputFile}`), result, { encoding: 'utf8' });
 }
